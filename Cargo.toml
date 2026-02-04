@@ -5,7 +5,7 @@ edition = "2021"
 description = "Lightweight statusline for Claude Code showing context usage and costs"
 license = "MIT"
 authors = ["Fazal Khan"]
-repository = "https://github.com/fazalmajid/cc-statusline"
+repository = "https://github.com/Demwunz/cc-statusline"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
