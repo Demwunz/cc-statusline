@@ -1,4 +1,4 @@
-# cc-statusline
+# Claude Code Statusline
 
 A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that shows where your context tokens are going and how much you're spending.
 
