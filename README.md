@@ -1,5 +1,13 @@
 # Claude Code Statusline
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Claude-191919?style=flat-square&logo=anthropic&logoColor=white" alt="Claude" />
+  <img src="https://img.shields.io/badge/Codex-412991?style=flat-square&logo=openai&logoColor=white" alt="Codex" />
+  <img src="https://img.shields.io/badge/Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white" alt="Gemini" />
+  <img src="https://img.shields.io/badge/CLI-000000?style=flat-square&logo=windowsterminal&logoColor=white" alt="CLI" />
+  <img src="https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white" alt="macOS" />
+</p>
+
 A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that shows where your context tokens are going and how much you're spending.
 
 ![Demo](demo.gif)
