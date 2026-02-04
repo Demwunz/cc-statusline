@@ -23,18 +23,43 @@ Run `cc-statusline --legend` to see this in your terminal.
 
 ## Installation
 
+### Shell script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Demwunz/cc-statusline/main/install.sh | bash
+```
+
+### Homebrew
+
+```bash
+brew tap Demwunz/tap
+brew install cc-statusline
+```
+
+### Debian/Ubuntu
+
+Download from [releases](https://github.com/Demwunz/cc-statusline/releases):
+
+```bash
+# x86_64
+sudo dpkg -i cc-statusline_0.1.0_amd64.deb
+
+# ARM64
+sudo dpkg -i cc-statusline_0.1.0_arm64.deb
+```
+
+### Cargo
+
+```bash
+cargo install cc-statusline
+```
+
 ### From source
 
 ```bash
 git clone https://github.com/Demwunz/cc-statusline.git
 cd cc-statusline
 cargo install --path .
-```
-
-### From crates.io (coming soon)
-
-```bash
-cargo install cc-statusline
 ```
 
 ## Setup

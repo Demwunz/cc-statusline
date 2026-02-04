@@ -1,0 +1,190 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact: cc-statusline-darwin-x86_64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact: cc-statusline-darwin-arm64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: cc-statusline-linux-x86_64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: cc-statusline-linux-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build
+        run: |
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          fi
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/cc-statusline dist/${{ matrix.artifact }}
+          cd dist && shasum -a 256 ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/*
+
+  create-deb:
+    name: Create .deb package
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - artifact: cc-statusline-linux-x86_64
+            arch: amd64
+          - artifact: cc-statusline-linux-arm64
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: bin
+
+      - name: Get version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create .deb package
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          ARCH=${{ matrix.arch }}
+          PKG_NAME=cc-statusline_${VERSION}_${ARCH}
+
+          mkdir -p ${PKG_NAME}/DEBIAN
+          mkdir -p ${PKG_NAME}/usr/bin
+
+          chmod +x bin/${{ matrix.artifact }}
+          cp bin/${{ matrix.artifact }} ${PKG_NAME}/usr/bin/cc-statusline
+
+          cat > ${PKG_NAME}/DEBIAN/control << EOF
+          Package: cc-statusline
+          Version: ${VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: ${ARCH}
+          Maintainer: Fazal Khan
+          Description: Lightweight statusline for Claude Code
+           Shows context token usage and costs in a colored bar format.
+          Homepage: https://github.com/Demwunz/cc-statusline
+          EOF
+
+          dpkg-deb --build ${PKG_NAME}
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-statusline_${{ steps.version.outputs.version }}_${{ matrix.arch }}.deb
+          path: "*.deb"
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build, create-deb]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "cc-statusline-*" -o -name "*.deb" -o -name "*.sha256" \) -exec cp {} release/ \;
+          ls -la release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+      - name: Get version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Download checksums
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cc-statusline-darwin-*
+          path: checksums
+          merge-multiple: true
+
+      - name: Extract checksums
+        id: checksums
+        run: |
+          ARM64_SHA=$(cat checksums/cc-statusline-darwin-arm64.sha256 | awk '{print $1}')
+          X86_SHA=$(cat checksums/cc-statusline-darwin-x86_64.sha256 | awk '{print $1}')
+          echo "arm64_sha=${ARM64_SHA}" >> $GITHUB_OUTPUT
+          echo "x86_sha=${X86_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update Homebrew tap
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          repository: Demwunz/homebrew-tap
+          event-type: update-formula
+          client-payload: |
+            {
+              "formula": "cc-statusline",
+              "version": "${{ steps.version.outputs.version }}",
+              "arm64_sha": "${{ steps.checksums.outputs.arm64_sha }}",
+              "x86_sha": "${{ steps.checksums.outputs.x86_sha }}"
+            }

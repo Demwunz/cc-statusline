@@ -1,0 +1,72 @@
+# Add this file to your homebrew-tap repo at:
+# https://github.com/Demwunz/homebrew-tap/.github/workflows/update-formula.yml
+#
+# You'll also need to create a Personal Access Token (PAT) with repo scope
+# and add it as a secret named HOMEBREW_TAP_TOKEN in the cc-statusline repo.
+
+name: Update Formula
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update cc-statusline formula
+        if: github.event.client_payload.formula == 'cc-statusline'
+        run: |
+          VERSION="${{ github.event.client_payload.version }}"
+          ARM64_SHA="${{ github.event.client_payload.arm64_sha }}"
+          X86_SHA="${{ github.event.client_payload.x86_sha }}"
+
+          cat > Formula/cc-statusline.rb << 'FORMULA_EOF'
+          class CcStatusline < Formula
+            desc "Lightweight statusline for Claude Code showing context usage and costs"
+            homepage "https://github.com/Demwunz/cc-statusline"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/Demwunz/cc-statusline/releases/download/vVERSION_PLACEHOLDER/cc-statusline-darwin-arm64"
+                sha256 "ARM64_SHA_PLACEHOLDER"
+
+                def install
+                  bin.install "cc-statusline-darwin-arm64" => "cc-statusline"
+                end
+              end
+
+              on_intel do
+                url "https://github.com/Demwunz/cc-statusline/releases/download/vVERSION_PLACEHOLDER/cc-statusline-darwin-x86_64"
+                sha256 "X86_SHA_PLACEHOLDER"
+
+                def install
+                  bin.install "cc-statusline-darwin-x86_64" => "cc-statusline"
+                end
+              end
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/cc-statusline --version")
+            end
+          end
+          FORMULA_EOF
+
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/cc-statusline.rb
+          sed -i "s/ARM64_SHA_PLACEHOLDER/${ARM64_SHA}/g" Formula/cc-statusline.rb
+          sed -i "s/X86_SHA_PLACEHOLDER/${X86_SHA}/g" Formula/cc-statusline.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/
+          git commit -m "Update cc-statusline to v${{ github.event.client_payload.version }}" || exit 0
+          git push
