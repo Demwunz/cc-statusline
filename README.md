@@ -34,8 +34,8 @@ Built in Rust with zero runtime dependencies. A statusline runs on every prompt,
 ## What It Shows
 
 ```
-[opus] ████████████████░░░░░░░░ 42% ⚡3 │ 2h 30m │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
-       ▲ context bar             ▲ subagents  ▲ time   ▲ cost           ▲ git     ▲ lang  ▲ path
+[opus] ████████████████░░░░░░░░ 42% ⚡3 │ 2h 30m left │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
+       ▲ context bar             ▲ subagents  ▲ time remaining  ▲ cost           ▲ git     ▲ lang  ▲ path
 ```
 
 The colored bar shows your context usage at a glance:
