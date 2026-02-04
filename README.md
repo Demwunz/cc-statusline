@@ -17,9 +17,6 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 ```
 [opus] ████████████████░░░░░░░░ 42% │ 2h 30m │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
        ▲ context bar                 ▲ time   ▲ cost           ▲ git     ▲ lang  ▲ path
-
-# Long sessions show days:
-[opus] ████████████████████████ 100%+ │ 3d 21h │ max ($56.90 saved) │ main │ go │ ~/dev/project
 ```
 
 The colored bar shows your context usage at a glance:
