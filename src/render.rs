@@ -1,6 +1,8 @@
-use crate::colors::{self, BOLD, DIM, RESET};
+use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
+use crate::git::GitStatus;
+use crate::workspace::{Language, shorten_path};
 
 const FILLED_CHAR: char = '█';
 const EMPTY_CHAR: char = '░';
@@ -12,6 +14,9 @@ pub fn render(
     duration_ms: u64,
     session_cost: f64,
     daily_cost: f64,
+    git: &GitStatus,
+    lang: &Language,
+    cwd: Option<&str>,
     config: &Config,
 ) -> String {
     let mut output = String::new();
@@ -62,7 +67,71 @@ pub fn render(
         }
     }
 
+    // Git status
+    if config.format.show_git && git.is_repo() {
+        output.push_str(&format!(" {DIM}│{RESET} "));
+        output.push_str(&render_git(git));
+    }
+
+    // Language
+    if config.format.show_lang && *lang != Language::Unknown {
+        output.push_str(&format!(" {DIM}│{RESET} "));
+        let color = colors::color_code(lang.color());
+        output.push_str(&format!("{}{}{}", color, lang.name(), RESET));
+    }
+
+    // Current working directory
+    if config.format.show_cwd {
+        if let Some(dir) = cwd {
+            output.push_str(&format!(" {DIM}│{RESET} "));
+            output.push_str(&format!("{DIM}{}{RESET}", shorten_path(dir)));
+        }
+    }
+
     output
+}
+
+/// Render git status with colors and symbols
+fn render_git(git: &GitStatus) -> String {
+    let mut parts = String::new();
+
+    // Branch name - color based on clean/dirty state
+    if let Some(ref branch) = git.branch {
+        if git.is_clean() {
+            parts.push_str(&format!("{GREEN}{}{RESET}", branch));
+        } else {
+            parts.push_str(&format!("{RED}{}{RESET}", branch));
+        }
+    }
+
+    // Status indicators
+    let mut indicators = String::new();
+
+    // Ahead/behind
+    if git.ahead > 0 {
+        indicators.push_str(&format!("↑{}", git.ahead));
+    }
+    if git.behind > 0 {
+        indicators.push_str(&format!("↓{}", git.behind));
+    }
+
+    // Changes: staged (✚), unstaged (●), untracked (?)
+    if git.staged > 0 {
+        indicators.push_str(&format!("{GREEN}✚{}{RESET}", git.staged));
+    }
+    if git.unstaged > 0 {
+        indicators.push_str(&format!("{RED}●{}{RESET}", git.unstaged));
+    }
+    if git.untracked > 0 {
+        indicators.push_str(&format!("{DIM}?{}{RESET}", git.untracked));
+    }
+
+    if !indicators.is_empty() {
+        parts.push(' ');
+        parts.push_str(&indicators);
+    }
+
+    parts
 }
 
 /// Render the color-coded context bar
@@ -221,4 +290,16 @@ pub fn print_legend(config: &Config) {
     println!();
     println!("Time:  session duration (format: Xd Xh or Xh XXm)");
     println!("Cost:  $session / $today (api plan) or \"max\" with savings (max plan)");
+    println!();
+    println!("Git status:");
+    println!("  {GREEN}branch{RESET}  = clean working tree");
+    println!("  {RED}branch{RESET}  = dirty working tree");
+    println!("  ↑n      = commits ahead of upstream");
+    println!("  ↓n      = commits behind upstream");
+    println!("  {GREEN}✚n{RESET}      = staged changes");
+    println!("  {RED}●n{RESET}      = unstaged changes");
+    println!("  {DIM}?n{RESET}      = untracked files");
+    println!();
+    println!("Language: detected from project files (Cargo.toml, package.json, etc.)");
+    println!("Path:     current working directory (~ = home)");
 }

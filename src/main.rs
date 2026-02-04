@@ -1,9 +1,11 @@
 mod colors;
 mod config;
 mod context;
+mod git;
 mod history;
 mod render;
 mod scanner;
+mod workspace;
 
 use config::Config;
 use context::ContextBreakdown;
@@ -171,6 +173,12 @@ fn run_statusline(config: &Config) {
         // Get history data (daily cost)
         let history = history::parse_history(cwd.as_deref(), input.session_id.as_deref());
 
+        // Get git status
+        let git_status = git::get_status(cwd.as_deref());
+
+        // Detect language
+        let lang = workspace::detect_language(cwd.as_deref());
+
         // Render and output
         let output = render::render(
             model_name,
@@ -178,6 +186,9 @@ fn run_statusline(config: &Config) {
             duration_ms,
             session_cost,
             history.daily_cost,
+            &git_status,
+            &lang,
+            cwd.as_deref(),
             config,
         );
 

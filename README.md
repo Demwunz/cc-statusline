@@ -7,11 +7,11 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 ## What It Shows
 
 ```
-[opus] ████████████████░░░░░░░░ 42% │ 2h 30m │ $0.45 / $12.30
-       ▲ context bar                 ▲ time   ▲ cost
+[opus] ████████████████░░░░░░░░ 42% │ 2h 30m │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
+       ▲ context bar                 ▲ time   ▲ cost           ▲ git     ▲ lang  ▲ path
 
 # Long sessions show days:
-[opus] ████████████████████████ 100%+ │ 3d 21h │ max ($56.90 saved)
+[opus] ████████████████████████ 100%+ │ 3d 21h │ max ($56.90 saved) │ main │ go │ ~/dev/project
 ```
 
 The colored bar shows your context usage at a glance:
@@ -21,6 +21,16 @@ The colored bar shows your context usage at a glance:
 - **Yellow** - MCP servers
 - **Green** - Your conversation
 - **Gray** - Available space
+
+Git status shows branch and working tree state:
+- **Green branch** - clean working tree
+- **Red branch** - dirty working tree
+- `↑n` / `↓n` - commits ahead/behind upstream
+- `✚n` - staged changes (green)
+- `●n` - unstaged changes (red)
+- `?n` - untracked files (dim)
+
+Language is auto-detected from project files (Cargo.toml, package.json, go.mod, etc.)
 
 Run `cc-statusline --legend` to see this in your terminal.
 
@@ -97,6 +107,9 @@ show_daily_cost = true
 bar_width = 24          # 0 = auto-detect
 plan = "api"            # "api" (pay-per-token) or "max" (subscription)
 plan_cost = 100.0       # Monthly cost of your Max plan (for savings calculation)
+show_git = true         # Show git branch and status
+show_lang = true        # Show detected language
+show_cwd = true         # Show current working directory
 
 [colors]
 base = "blue"

@@ -21,6 +21,12 @@ pub struct FormatConfig {
     pub plan: String,
     /// Monthly cost of subscription plan (e.g., 100.0 for $100/month Max plan)
     pub plan_cost: f64,
+    /// Show git status (branch, dirty state)
+    pub show_git: bool,
+    /// Show detected language/framework
+    pub show_lang: bool,
+    /// Show current working directory
+    pub show_cwd: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -59,6 +65,9 @@ impl Default for FormatConfig {
             bar_width: 24,
             plan: "api".to_string(),
             plan_cost: 100.0, // Default Max plan cost
+            show_git: true,
+            show_lang: true,
+            show_cwd: true,
         }
     }
 }
