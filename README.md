@@ -1,4 +1,4 @@
-# Claude Code Statusline
+<h1 align="center"> Claude Code Statusline </h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Claude-191919?style=flat-square&logo=anthropic&logoColor=white" alt="Claude" />
