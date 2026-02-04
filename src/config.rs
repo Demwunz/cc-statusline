@@ -17,6 +17,10 @@ pub struct FormatConfig {
     pub show_cost: bool,
     pub show_daily_cost: bool,
     pub bar_width: usize,
+    /// Subscription plan: "api" (default, pay-per-token) or "max" (fixed monthly)
+    pub plan: String,
+    /// Monthly cost of subscription plan (e.g., 100.0 for $100/month Max plan)
+    pub plan_cost: f64,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -53,6 +57,8 @@ impl Default for FormatConfig {
             show_cost: true,
             show_daily_cost: true,
             bar_width: 24,
+            plan: "api".to_string(),
+            plan_cost: 100.0, // Default Max plan cost
         }
     }
 }
@@ -94,7 +100,16 @@ impl Config {
 }
 
 /// Returns the config file path
+/// Checks ~/.config first (XDG style), then platform-specific config dir
 fn config_path() -> Option<PathBuf> {
+    // First try ~/.config (XDG style, cross-platform friendly)
+    if let Some(home) = dirs::home_dir() {
+        let xdg_path = home.join(".config").join("cc-statusline").join("config.toml");
+        if xdg_path.exists() {
+            return Some(xdg_path);
+        }
+    }
+    // Fall back to platform-specific config dir
     dirs::config_dir().map(|c| c.join("cc-statusline").join("config.toml"))
 }
 

@@ -7,8 +7,11 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 ## What It Shows
 
 ```
-[opus] ████████████████░░░░░░░░ 42% │ 2h30m │ $0.45 / $12.30
-       ▲ context bar              ▲ time   ▲ session / daily cost
+[opus] ████████████████░░░░░░░░ 42% │ 2h 30m │ $0.45 / $12.30
+       ▲ context bar                 ▲ time   ▲ cost
+
+# Long sessions show days:
+[opus] ████████████████████████ 100%+ │ 3d 21h │ max ($56.90 saved)
 ```
 
 The colored bar shows your context usage at a glance:
@@ -92,6 +95,8 @@ show_model = true
 show_cost = true
 show_daily_cost = true
 bar_width = 24          # 0 = auto-detect
+plan = "api"            # "api" (pay-per-token) or "max" (subscription)
+plan_cost = 100.0       # Monthly cost of your Max plan (for savings calculation)
 
 [colors]
 base = "blue"

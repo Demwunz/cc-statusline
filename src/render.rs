@@ -27,8 +27,13 @@ pub fn render(
     // Context bar
     output.push_str(&render_bar(breakdown, config));
 
-    // Percentage
-    output.push_str(&format!(" {}%", breakdown.percentage()));
+    // Percentage (cap at 100%, show "+" indicator if exceeded)
+    let pct = breakdown.percentage();
+    if pct > 100 {
+        output.push_str(&format!(" {BOLD}100%+{RESET}"));
+    } else {
+        output.push_str(&format!(" {}%", pct));
+    }
 
     // Session time
     output.push_str(&format!(" {DIM}│{RESET} "));
@@ -37,10 +42,23 @@ pub fn render(
     // Cost
     if config.format.show_cost {
         output.push_str(&format!(" {DIM}│{RESET} "));
-        output.push_str(&format_cost(session_cost));
-        if config.format.show_daily_cost {
-            output.push_str(&format!(" {DIM}/{RESET} "));
-            output.push_str(&format_cost(daily_cost));
+        if config.format.plan == "max" {
+            // Max plan: show plan name and savings when applicable
+            output.push_str(&format!("{DIM}max{RESET}"));
+            // Show savings when daily cost exceeds plan cost
+            if daily_cost > config.format.plan_cost {
+                let saved = daily_cost - config.format.plan_cost;
+                output.push_str(&format!(" {DIM}({RESET}"));
+                output.push_str(&format_cost(saved));
+                output.push_str(&format!(" {DIM}saved){RESET}"));
+            }
+        } else {
+            // API plan: show session cost / daily cost as before
+            output.push_str(&format_cost(session_cost));
+            if config.format.show_daily_cost {
+                output.push_str(&format!(" {DIM}/{RESET} "));
+                output.push_str(&format_cost(daily_cost));
+            }
         }
     }
 
@@ -128,11 +146,15 @@ fn format_duration_ms(ms: u64) -> String {
     }
 
     let total_secs = ms / 1000;
-    let hours = total_secs / 3600;
+    let days = total_secs / 86400;
+    let hours = (total_secs % 86400) / 3600;
     let mins = (total_secs % 3600) / 60;
 
-    if hours > 0 {
-        format!("{BOLD}{}h{:02}m{RESET}", hours, mins)
+    if days > 0 {
+        // When days > 0, show days and hours, drop minutes for brevity
+        format!("{BOLD}{}d {}h{RESET}", days, hours)
+    } else if hours > 0 {
+        format!("{BOLD}{}h {:02}m{RESET}", hours, mins)
     } else {
         format!("{BOLD}{}m{RESET}", mins)
     }
@@ -197,6 +219,6 @@ pub fn print_legend(config: &Config) {
         RESET
     );
     println!();
-    println!("Time:  session duration (from first message)");
-    println!("Cost:  $session / $today");
+    println!("Time:  session duration (format: Xd Xh or Xh XXm)");
+    println!("Cost:  $session / $today (api plan) or \"max\" with savings (max plan)");
 }

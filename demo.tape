@@ -4,7 +4,7 @@ Output demo.gif
 Set Shell "bash"
 Set FontSize 16
 Set Width 900
-Set Height 450
+Set Height 500
 Set Theme "Dracula"
 Set Padding 20
 
@@ -32,11 +32,19 @@ Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input
 Enter
 Sleep 2s
 
-Type "# Sonnet at 75% context usage:"
+Type "# Long sessions show days (3d 21h) instead of hours:"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":120000,"total_output_tokens":30000,"context_window_size":200000},"cost":{"total_cost_usd":1.80,"total_duration_ms":9000000}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":180000,"total_output_tokens":40000,"context_window_size":200000},"cost":{"total_cost_usd":12.50,"total_duration_ms":337680000}}' | cc-statusline`
+Enter
+Sleep 2s
+
+Type "# Context > 100% shows '100%+' (after compaction):"
+Enter
+Sleep 500ms
+
+Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":400000,"total_output_tokens":100000,"context_window_size":200000},"cost":{"total_cost_usd":45.00,"total_duration_ms":172800000}}' | cc-statusline`
 Enter
 Sleep 2s
 
