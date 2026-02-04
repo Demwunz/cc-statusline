@@ -12,24 +12,36 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 
 ![Demo](demo.gif)
 
+## Features
+
+- ⚡ **Subagent tracking** - See how many background agents are running
+- 📊 **Context breakdown** - Visual bar showing token usage by segment
+- 💰 **Cost tracking** - Session and daily spending at a glance
+- 🔀 **Git integration** - Branch, staged/unstaged changes, ahead/behind
+- 🦀 **Language detection** - Auto-detects project language
+- 📁 **Working directory** - Shows your current path
+
 ## What It Shows
 
 ```
-[opus] ████████████████░░░░░░░░ 42% │ 2h 30m │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
-       ▲ context bar                 ▲ time   ▲ cost           ▲ git     ▲ lang  ▲ path
+[opus] ████████████████░░░░░░░░ 42% ⚡3 │ 2h 30m │ $0.45 / $12.30 │ main ✚2 │ rust │ ~/dev/myproject
+       ▲ context bar             ▲ subagents  ▲ time   ▲ cost           ▲ git     ▲ lang  ▲ path
 ```
 
 The colored bar shows your context usage at a glance:
-- **Blue** - Base system prompt (~5k tokens)
-- **Cyan** - Skills you've installed
-- **Magenta** - Enabled plugins
-- **Yellow** - MCP servers
-- **Green** - Your conversation
-- **Gray** - Available space
+- 🔵 **Blue** - Base system prompt (~5k tokens)
+- 🩵 **Cyan** - Skills you've installed
+- 🟣 **Magenta** - Enabled plugins
+- 🟡 **Yellow** - MCP servers
+- 🟢 **Green** - Your conversation
+- ⬜ **Gray** - Available space
+
+Subagent indicator:
+- `⚡n` - Number of active background agents (hidden when 0)
 
 Git status shows branch and working tree state:
-- **Green branch** - clean working tree
-- **Red branch** - dirty working tree
+- 🟢 **Green branch** - clean working tree
+- 🔴 **Red branch** - dirty working tree
 - `↑n` / `↓n` - commits ahead/behind upstream
 - `✚n` - staged changes (green)
 - `●n` - unstaged changes (red)
@@ -143,9 +155,9 @@ cc-statusline --version
 
 ## Performance
 
-- Binary size: ~570KB
-- Startup time: <50ms
-- Memory: <5MB
+- ⚡ Binary size: ~570KB
+- 🚀 Startup time: <50ms
+- 💾 Memory: <5MB
 
 ## License
 
