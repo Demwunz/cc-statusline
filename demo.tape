@@ -3,8 +3,8 @@ Output demo.gif
 
 Set Shell "bash"
 Set FontSize 16
-Set Width 900
-Set Height 500
+Set Width 1100
+Set Height 550
 Set Theme "Dracula"
 Set Padding 20
 
@@ -18,7 +18,7 @@ Sleep 500ms
 
 Type "cc-statusline --legend"
 Enter
-Sleep 3s
+Sleep 4s
 
 Type "# The statusline receives JSON from Claude Code via stdin"
 Enter
@@ -28,15 +28,19 @@ Type "# Here's what it looks like with Opus at 32% context:"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":50000,"total_output_tokens":10000,"context_window_size":200000},"cost":{"total_cost_usd":0.45,"total_duration_ms":5400000}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":50000,"total_output_tokens":10000,"context_window_size":200000},"cost":{"total_cost_usd":0.45,"total_duration_ms":5400000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
+
+Type "# Shows git branch (green=clean, red=dirty), language, and path"
+Enter
+Sleep 1s
 
 Type "# Long sessions show days (3d 21h) instead of hours:"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":180000,"total_output_tokens":40000,"context_window_size":200000},"cost":{"total_cost_usd":12.50,"total_duration_ms":337680000}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":180000,"total_output_tokens":40000,"context_window_size":200000},"cost":{"total_cost_usd":12.50,"total_duration_ms":337680000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
 
@@ -44,15 +48,7 @@ Type "# Context > 100% shows '100%+' (after compaction):"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":400000,"total_output_tokens":100000,"context_window_size":200000},"cost":{"total_cost_usd":45.00,"total_duration_ms":172800000}}' | cc-statusline`
-Enter
-Sleep 2s
-
-Type "# Haiku with low usage:"
-Enter
-Sleep 500ms
-
-Type@50ms `echo '{"model":{"display_name":"Haiku"},"context_window":{"total_input_tokens":5000,"total_output_tokens":1000,"context_window_size":200000},"cost":{"total_cost_usd":0.02,"total_duration_ms":300000}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":400000,"total_output_tokens":100000,"context_window_size":200000},"cost":{"total_cost_usd":45.00,"total_duration_ms":172800000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
 
