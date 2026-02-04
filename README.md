@@ -21,6 +21,16 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 - 🦀 **Language detection** - Auto-detects project language
 - 📁 **Working directory** - Shows your current path
 
+## Performance
+
+Built in Rust with zero runtime dependencies. A statusline runs on every prompt, so speed matters.
+
+| Metric | cc-statusline | Typical Node.js CLI |
+|--------|---------------|---------------------|
+| ⚡ Binary size | ~570KB | 50-100MB+ (with node_modules) |
+| 🚀 Startup | <50ms | 200-500ms |
+| 💾 Memory | <5MB | 30-100MB |
+
 ## What It Shows
 
 ```
@@ -152,12 +162,6 @@ cc-statusline --legend
 # Version
 cc-statusline --version
 ```
-
-## Performance
-
-- ⚡ Binary size: ~570KB
-- 🚀 Startup time: <50ms
-- 💾 Memory: <5MB
 
 ## License
 
