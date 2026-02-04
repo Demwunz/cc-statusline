@@ -83,8 +83,8 @@ ttl_seconds = 5
 ## Usage
 
 ```bash
-# Normal mode - reads JSON from stdin
-echo '{"model":"claude-opus-4-5-20251101","inputTokens":50000,"contextWindow":200000}' | cc-statusline
+# Normal mode - reads JSON from stdin (Claude Code sends this automatically)
+echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":50000,"total_output_tokens":10000,"context_window_size":200000},"cost":{"total_cost_usd":0.45,"total_duration_ms":5400000}}' | cc-statusline
 
 # Show what the colors mean
 cc-statusline --legend

@@ -1,7 +1,6 @@
 use crate::colors::{self, BOLD, DIM, RESET};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
-use chrono::{DateTime, Utc};
 
 const FILLED_CHAR: char = '█';
 const EMPTY_CHAR: char = '░';
@@ -10,7 +9,7 @@ const EMPTY_CHAR: char = '░';
 pub fn render(
     model: Option<&str>,
     breakdown: &ContextBreakdown,
-    session_start: Option<DateTime<Utc>>,
+    duration_ms: u64,
     session_cost: f64,
     daily_cost: f64,
     config: &Config,
@@ -33,7 +32,7 @@ pub fn render(
 
     // Session time
     output.push_str(&format!(" {DIM}│{RESET} "));
-    output.push_str(&format_duration(session_start));
+    output.push_str(&format_duration_ms(duration_ms));
 
     // Cost
     if config.format.show_cost {
@@ -123,13 +122,12 @@ fn shorten_model(model: &str) -> &str {
     }
 }
 
-fn format_duration(start: Option<DateTime<Utc>>) -> String {
-    let Some(s) = start else {
-        return format!("{DIM}--:--{RESET}");
-    };
+fn format_duration_ms(ms: u64) -> String {
+    if ms == 0 {
+        return format!("{DIM}0m{RESET}");
+    }
 
-    let elapsed = Utc::now().signed_duration_since(s);
-    let total_secs = elapsed.num_seconds().max(0);
+    let total_secs = ms / 1000;
     let hours = total_secs / 3600;
     let mins = (total_secs % 3600) / 60;
 

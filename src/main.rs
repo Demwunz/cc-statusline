@@ -51,8 +51,7 @@ OPTIONS:
     -l, --legend     Show what the colors mean
 
 STDIN FORMAT:
-    Claude Code pipes JSON:
-    {{\"model\": \"...\", \"inputTokens\": N, \"outputTokens\": N, \"contextWindow\": N, \"cost\": N}}
+    Claude Code pipes nested JSON with model, context_window, cost, and workspace fields.
 
 CONFIG:
     ~/.config/cc-statusline/config.toml
@@ -69,23 +68,51 @@ SETUP:
     );
 }
 
-/// Input format from Claude Code
+/// Input format from Claude Code (nested JSON structure)
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct StdinInput {
-    model: Option<String>,
     #[serde(default)]
-    input_tokens: u64,
+    model: Option<ModelInfo>,
     #[serde(default)]
-    output_tokens: u64,
+    context_window: Option<ContextWindowInfo>,
     #[serde(default)]
-    context_window: Option<u64>,
+    cost: Option<CostInfo>,
     #[serde(default)]
-    cost: f64,
-    #[serde(default)]
-    cwd: Option<String>,
+    workspace: Option<WorkspaceInfo>,
     #[serde(default)]
     session_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ModelInfo {
+    #[serde(default)]
+    id: Option<String>,
+    #[serde(default)]
+    display_name: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ContextWindowInfo {
+    #[serde(default)]
+    total_input_tokens: u64,
+    #[serde(default)]
+    total_output_tokens: u64,
+    #[serde(default)]
+    context_window_size: u64,
+}
+
+#[derive(Debug, Deserialize)]
+struct CostInfo {
+    #[serde(default)]
+    total_cost_usd: f64,
+    #[serde(default)]
+    total_duration_ms: u64,
+}
+
+#[derive(Debug, Deserialize)]
+struct WorkspaceInfo {
+    #[serde(default)]
+    current_dir: Option<String>,
 }
 
 fn run_statusline(config: &Config) {
@@ -111,6 +138,23 @@ fn run_statusline(config: &Config) {
             }
         };
 
+        // Extract nested values
+        let model_name = input
+            .model
+            .as_ref()
+            .and_then(|m| m.display_name.as_deref().or(m.id.as_deref()));
+
+        let (input_tokens, output_tokens, context_size) = input
+            .context_window
+            .as_ref()
+            .map(|c| (c.total_input_tokens, c.total_output_tokens, Some(c.context_window_size)))
+            .unwrap_or((0, 0, None));
+
+        let session_cost = input.cost.as_ref().map(|c| c.total_cost_usd).unwrap_or(0.0);
+        let duration_ms = input.cost.as_ref().map(|c| c.total_duration_ms).unwrap_or(0);
+
+        let cwd = input.workspace.as_ref().and_then(|w| w.current_dir.clone());
+
         // Get cached scanner results
         let (skills_tokens, plugins_tokens, mcp_tokens) = cache.get();
 
@@ -119,20 +163,20 @@ fn run_statusline(config: &Config) {
             skills_tokens,
             plugins_tokens,
             mcp_tokens,
-            input.input_tokens,
-            input.output_tokens,
-            input.context_window,
+            input_tokens,
+            output_tokens,
+            context_size,
         );
 
-        // Get history data (session start, daily cost)
-        let history = history::parse_history(input.cwd.as_deref(), input.session_id.as_deref());
+        // Get history data (daily cost)
+        let history = history::parse_history(cwd.as_deref(), input.session_id.as_deref());
 
         // Render and output
         let output = render::render(
-            input.model.as_deref(),
+            model_name,
             &breakdown,
-            history.session_start,
-            input.cost,
+            duration_ms,
+            session_cost,
             history.daily_cost,
             config,
         );
