@@ -1,0 +1,23 @@
+[package]
+name = "cc-statusline"
+version = "0.1.0"
+edition = "2021"
+description = "Lightweight statusline for Claude Code showing context usage and costs"
+license = "MIT"
+authors = ["Fazal Khan"]
+repository = "https://github.com/fazalmajid/cc-statusline"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+dirs = "5"
+walkdir = "2"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "z"
+codegen-units = 1
+panic = "abort"
