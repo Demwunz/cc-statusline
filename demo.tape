@@ -36,6 +36,14 @@ Type "# Shows git branch (green=clean, red=dirty), language, and path"
 Enter
 Sleep 1s
 
+Type "# When subagents are spawned, they appear after the percentage:"
+Enter
+Sleep 500ms
+
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":80000,"total_output_tokens":20000,"context_window_size":200000},"cost":{"total_cost_usd":1.20,"total_duration_ms":900000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"},"subagents":{"active":3}}' | cc-statusline`
+Enter
+Sleep 2s
+
 Type "# Long sessions show days (3d 21h) instead of hours:"
 Enter
 Sleep 500ms
@@ -44,7 +52,7 @@ Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input
 Enter
 Sleep 2s
 
-Type "# Context > 100% shows '100%+' (after compaction):"
+Type "# Bar caps at 100%, percentage shows '100%+' when exceeded:"
 Enter
 Sleep 500ms
 
