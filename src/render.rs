@@ -1,4 +1,4 @@
-use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED};
+use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, CYAN};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
 use crate::git::GitStatus;
@@ -17,6 +17,7 @@ pub fn render(
     git: &GitStatus,
     lang: &Language,
     cwd: Option<&str>,
+    subagent_count: u32,
     config: &Config,
 ) -> String {
     let mut output = String::new();
@@ -38,6 +39,11 @@ pub fn render(
         output.push_str(&format!(" {BOLD}100%+{RESET}"));
     } else {
         output.push_str(&format!(" {}%", pct));
+    }
+
+    // Subagent count (only show when > 0)
+    if subagent_count > 0 {
+        output.push_str(&format!(" {CYAN}⚡{}{RESET}", subagent_count));
     }
 
     // Session time
@@ -143,8 +149,8 @@ fn render_bar(breakdown: &ContextBreakdown, config: &Config) -> String {
         terminal_width().map(|w| w.min(40)).unwrap_or(24)
     };
 
-    let total = breakdown.context_window;
-    if total == 0 {
+    let context_window = breakdown.context_window;
+    if context_window == 0 {
         return format!(
             "{}{}{}",
             colors::color_code(&config.colors.empty),
@@ -156,15 +162,22 @@ fn render_bar(breakdown: &ContextBreakdown, config: &Config) -> String {
     let mut bar = String::new();
     let mut chars_used = 0;
 
-    // Render each segment
+    // Calculate the total filled portion of the bar (capped at 100%)
+    let total_tokens = breakdown.total();
+    let fill_ratio = (total_tokens as f64 / context_window as f64).min(1.0);
+    let total_filled_chars = (fill_ratio * width as f64).round() as usize;
+
+    // Render each segment proportionally within the filled area
+    // Segments are scaled relative to total tokens used (not context window)
     for (tokens, segment_type) in breakdown.segments() {
-        if tokens == 0 {
+        if tokens == 0 || chars_used >= total_filled_chars {
             continue;
         }
 
-        let fraction = tokens as f64 / total as f64;
-        let segment_chars = ((fraction * width as f64).round() as usize).max(1);
-        let chars_to_draw = segment_chars.min(width - chars_used);
+        // Calculate this segment's proportion of the total used tokens
+        let segment_fraction = tokens as f64 / total_tokens as f64;
+        let segment_chars = ((segment_fraction * total_filled_chars as f64).round() as usize).max(1);
+        let chars_to_draw = segment_chars.min(total_filled_chars - chars_used);
 
         if chars_to_draw == 0 {
             continue;
@@ -302,4 +315,7 @@ pub fn print_legend(config: &Config) {
     println!();
     println!("Language: detected from project files (Cargo.toml, package.json, etc.)");
     println!("Path:     current working directory (~ = home)");
+    println!();
+    println!("Subagents:");
+    println!("  {CYAN}⚡n{RESET}     = active subagents (shown only when > 0)");
 }
