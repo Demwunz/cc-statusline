@@ -27,7 +27,7 @@ Built in Rust with zero runtime dependencies. A statusline runs on every prompt,
 
 | Metric | cc-statusline | Typical Node.js CLI |
 |--------|---------------|---------------------|
-| ⚡ Binary size | ~570KB | 50-100MB+ (with node_modules) |
+| ⚡ Binary size | ~620KB | 50-100MB+ (with node_modules) |
 | 🚀 Startup | <50ms | 200-500ms |
 | 💾 Memory | <5MB | 30-100MB |
 
