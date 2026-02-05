@@ -4,8 +4,9 @@ use crate::context::ContextBreakdown;
 use crate::git::GitStatus;
 use crate::workspace::shorten_path;
 
-const FILLED_CHAR: char = '█';
-const EMPTY_CHAR: char = '░';
+const OVERHEAD_CHAR: char = '▓';    // U+2593 — base/skills/plugins/mcp
+const CONVERSATION_CHAR: char = '█'; // U+2588 — conversation
+const EMPTY_CHAR: char = '░';        // U+2591 — available
 
 /// Render the statusline to a string
 pub fn render(
@@ -166,41 +167,59 @@ fn render_bar(breakdown: &ContextBreakdown, config: &Config) -> String {
     let mut bar = String::new();
     let mut chars_used = 0;
 
-    // Calculate the total filled portion of the bar (capped at 100%)
-    let total_tokens = breakdown.total();
-    let fill_ratio = (total_tokens as f64 / context_window as f64).min(1.0);
+    // Use authoritative percentage for fill ratio (fixes token-based mismatch)
+    let fill_ratio = (breakdown.percentage() as f64 / 100.0).min(1.0);
     let total_filled_chars = (fill_ratio * width as f64).round() as usize;
 
-    // Render each segment proportionally within the filled area
-    // Segments are scaled relative to total tokens used (not context window)
-    for (tokens, segment_type) in breakdown.segments() {
-        if tokens == 0 || chars_used >= total_filled_chars {
-            continue;
+    // Collect non-zero segments
+    let total_tokens = breakdown.total();
+    let segments: Vec<(u64, &str)> = breakdown
+        .segments()
+        .into_iter()
+        .filter(|(tokens, _)| *tokens > 0)
+        .collect();
+
+    if !segments.is_empty() && total_filled_chars > 0 && total_tokens > 0 {
+        // Allocate chars proportionally (min 1 per segment, last gets remainder)
+        let mut allocs: Vec<usize> = Vec::with_capacity(segments.len());
+        let mut allocated = 0;
+        for (i, (tokens, _)) in segments.iter().enumerate() {
+            if i == segments.len() - 1 {
+                allocs.push(total_filled_chars - allocated);
+            } else {
+                let frac = *tokens as f64 / total_tokens as f64;
+                let chars = ((frac * total_filled_chars as f64).round() as usize).max(1);
+                let chars = chars.min(total_filled_chars - allocated - (segments.len() - 1 - i));
+                allocs.push(chars);
+                allocated += chars;
+            }
         }
 
-        // Calculate this segment's proportion of the total used tokens
-        let segment_fraction = tokens as f64 / total_tokens as f64;
-        let segment_chars = ((segment_fraction * total_filled_chars as f64).round() as usize).max(1);
-        let chars_to_draw = segment_chars.min(total_filled_chars - chars_used);
+        // Render segments
+        for ((_, segment_type), seg_chars) in
+            segments.iter().zip(allocs.iter())
+        {
+            let color = match *segment_type {
+                "base" => colors::color_code(&config.colors.base),
+                "skills" => colors::color_code(&config.colors.skills),
+                "plugins" => colors::color_code(&config.colors.plugins),
+                "mcp" => colors::color_code(&config.colors.mcp),
+                "conversation" => colors::color_code(&config.colors.conversation),
+                _ => colors::color_code(&config.colors.empty),
+            };
 
-        if chars_to_draw == 0 {
-            continue;
+            // Two-texture fill: overhead segments use ▓, conversation uses █
+            let fill_char = if *segment_type == "conversation" {
+                CONVERSATION_CHAR
+            } else {
+                OVERHEAD_CHAR
+            };
+
+            bar.push_str(color);
+            bar.push_str(&fill_char.to_string().repeat(*seg_chars));
+            bar.push_str(RESET);
+            chars_used += seg_chars;
         }
-
-        let color = match segment_type {
-            "base" => colors::color_code(&config.colors.base),
-            "skills" => colors::color_code(&config.colors.skills),
-            "plugins" => colors::color_code(&config.colors.plugins),
-            "mcp" => colors::color_code(&config.colors.mcp),
-            "conversation" => colors::color_code(&config.colors.conversation),
-            _ => colors::color_code(&config.colors.empty),
-        };
-
-        bar.push_str(color);
-        bar.push_str(&FILLED_CHAR.to_string().repeat(chars_to_draw));
-        bar.push_str(RESET);
-
-        chars_used += chars_to_draw;
     }
 
     // Fill remaining with empty
@@ -285,31 +304,31 @@ pub fn print_legend(config: &Config) {
     println!(
         "  {}{}{} blue    = base system (~5k tokens)",
         colors::color_code(&config.colors.base),
-        FILLED_CHAR.to_string().repeat(2),
+        OVERHEAD_CHAR.to_string().repeat(2),
         RESET
     );
     println!(
         "  {}{}{} cyan    = skills",
         colors::color_code(&config.colors.skills),
-        FILLED_CHAR.to_string().repeat(2),
+        OVERHEAD_CHAR.to_string().repeat(2),
         RESET
     );
     println!(
         "  {}{}{} magenta = plugins (enabled)",
         colors::color_code(&config.colors.plugins),
-        FILLED_CHAR.to_string().repeat(2),
+        OVERHEAD_CHAR.to_string().repeat(2),
         RESET
     );
     println!(
         "  {}{}{} yellow  = MCP servers",
         colors::color_code(&config.colors.mcp),
-        FILLED_CHAR.to_string().repeat(2),
+        OVERHEAD_CHAR.to_string().repeat(2),
         RESET
     );
     println!(
         "  {}{}{} green   = conversation",
         colors::color_code(&config.colors.conversation),
-        FILLED_CHAR.to_string().repeat(2),
+        CONVERSATION_CHAR.to_string().repeat(2),
         RESET
     );
     println!(
