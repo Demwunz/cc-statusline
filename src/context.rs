@@ -25,6 +25,10 @@ pub struct ContextBreakdown {
     pub total_tokens: u64,
     /// Context window size
     pub context_window: u64,
+    /// Pre-calculated usage percentage from Claude Code (if available)
+    pub used_percentage: Option<u64>,
+    /// Remaining tokens in context window
+    pub remaining_tokens: u64,
 }
 
 impl ContextBreakdown {
@@ -35,6 +39,8 @@ impl ContextBreakdown {
         input_tokens: u64,
         output_tokens: u64,
         context_window: Option<u64>,
+        used_percentage: Option<u64>,
+        remaining_tokens: u64,
     ) -> Self {
         // Claude Code's tokens are the authoritative total
         let total_from_claude = input_tokens + output_tokens;
@@ -46,6 +52,8 @@ impl ContextBreakdown {
             mcp_tokens,
             total_tokens: total_from_claude,
             context_window: context_window.unwrap_or(DEFAULT_CONTEXT_WINDOW),
+            used_percentage,
+            remaining_tokens,
         }
     }
 
@@ -56,6 +64,9 @@ impl ContextBreakdown {
 
     /// Usage percentage (0-100, capped)
     pub fn percentage(&self) -> u64 {
+        if let Some(pct) = self.used_percentage {
+            return pct;
+        }
         if self.context_window == 0 {
             return 0;
         }

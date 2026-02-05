@@ -1,4 +1,4 @@
-use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, CYAN};
+use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, YELLOW, CYAN};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
 use crate::git::GitStatus;
@@ -33,12 +33,24 @@ pub fn render(
     // Context bar
     output.push_str(&render_bar(breakdown, config));
 
-    // Percentage (cap at 100%, show "+" indicator if exceeded)
+    // Percentage with color-coded degradation thresholds
     let pct = breakdown.percentage();
-    if pct > 100 {
-        output.push_str(&format!(" {BOLD}100%+{RESET}"));
+    let pct_str = if pct > 100 {
+        format!(" {BOLD}{RED}100%+{RESET}")
+    } else if pct > 75 {
+        format!(" {BOLD}{RED}{}%{RESET}", pct)
+    } else if pct > 60 {
+        format!(" {RED}{}%{RESET}", pct)
+    } else if pct > 33 {
+        format!(" {YELLOW}{}%{RESET}", pct)
     } else {
-        output.push_str(&format!(" {}%", pct));
+        format!(" {}%", pct)
+    };
+    output.push_str(&pct_str);
+
+    // Remaining tokens
+    if breakdown.remaining_tokens > 0 {
+        output.push_str(&format!(" {DIM}{} left{RESET}", format_tokens(breakdown.remaining_tokens)));
     }
 
     // Subagent count (only show when > 0)
@@ -241,6 +253,21 @@ fn format_duration_ms(ms: u64) -> String {
     }
 }
 
+fn format_tokens(n: u64) -> String {
+    if n >= 1_000_000 {
+        let m = n as f64 / 1_000_000.0;
+        if m >= 10.0 {
+            format!("{}m", m.round() as u64)
+        } else {
+            format!("{:.1}m", m)
+        }
+    } else if n >= 1_000 {
+        format!("{}k", n / 1_000)
+    } else {
+        format!("{}", n)
+    }
+}
+
 fn format_cost(cost: f64) -> String {
     if cost < 0.01 {
         format!("{DIM}$0.00{RESET}")
@@ -299,6 +326,12 @@ pub fn print_legend(config: &Config) {
         EMPTY_CHAR.to_string().repeat(2),
         RESET
     );
+    println!();
+    println!("Context usage thresholds:");
+    println!("   0-33%  optimal (no color)");
+    println!("  {YELLOW}34-60%{RESET}  degrading — recall precision drops");
+    println!("  {RED}61-75%{RESET}  danger — approaching compaction");
+    println!("  {BOLD}{RED}76%+{RESET}    critical — auto-compaction imminent");
     println!();
     println!("Time:  elapsed session time (format: Xd Xh or Xh XXm)");
     println!("Cost:  $session / $today (api plan) or \"max\" with savings (max plan)");

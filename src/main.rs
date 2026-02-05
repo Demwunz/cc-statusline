@@ -109,6 +109,10 @@ struct ContextWindowInfo {
     total_output_tokens: u64,
     #[serde(default)]
     context_window_size: u64,
+    #[serde(default)]
+    used_percentage: Option<f64>,
+    #[serde(default)]
+    remaining_percentage: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -160,6 +164,16 @@ fn run_statusline(config: &Config) {
             .map(|c| (c.total_input_tokens, c.total_output_tokens, Some(c.context_window_size)))
             .unwrap_or((0, 0, None));
 
+        let used_pct = input.context_window.as_ref().and_then(|c| {
+            c.used_percentage.map(|p| p.round() as u64)
+        });
+
+        let remaining_tokens = input.context_window.as_ref().map(|c| {
+            c.remaining_percentage
+                .map(|pct| (c.context_window_size as f64 * pct / 100.0) as u64)
+                .unwrap_or(0)
+        }).unwrap_or(0);
+
         let session_cost = input.cost.as_ref().map(|c| c.total_cost_usd).unwrap_or(0.0);
         let duration_ms = input.cost.as_ref().map(|c| c.total_duration_ms).unwrap_or(0);
 
@@ -179,6 +193,8 @@ fn run_statusline(config: &Config) {
             input_tokens,
             output_tokens,
             context_size,
+            used_pct,
+            remaining_tokens,
         );
 
         // Get history data (daily cost)
