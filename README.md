@@ -34,17 +34,17 @@ Built in Rust with zero runtime dependencies. A statusline runs on every prompt,
 ## What It Shows
 
 ```
-[opus] ████████████████░░░░░░░░ 42% 116k left ⚡3 │ 1h 30m │ $0.45 / $12.30 │ main ✚2 │ ~/d/myproject
+[opus] ▓▓▓████████████░░░░░░░░ 42% 116k left ⚡3 │ 1h 30m │ $0.45 / $12.30 │ main ✚2 │ ~/d/myproject
        ▲ context bar             ▲ remaining   ▲ subagents ▲ elapsed ▲ cost           ▲ git     ▲ path
 ```
 
-**Context bar** — colored segments show where tokens are going:
-- 🔵 Blue = base system prompt (~5k)
-- 🩵 Cyan = skills
-- 🟣 Magenta = plugins
-- 🟡 Yellow = MCP servers
-- 🟢 Green = conversation
-- ⬜ Gray = available
+**Context bar** — two textures show overhead vs conversation at a glance:
+- 🔵 `▓` Blue = base system prompt (~5k)
+- 🩵 `▓` Cyan = skills
+- 🟣 `▓` Magenta = plugins
+- 🟡 `▓` Yellow = MCP servers
+- 🟢 `█` Green = conversation
+- ⬜ `░` Gray = available
 
 **Degradation thresholds** — percentage color warns you as context fills:
 
