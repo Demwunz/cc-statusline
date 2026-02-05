@@ -46,9 +46,9 @@ pub fn render(
         output.push_str(&format!(" {CYAN}⚡{}{RESET}", subagent_count));
     }
 
-    // Session time
+    // Session time (elapsed)
     output.push_str(&format!(" {DIM}│{RESET} "));
-    output.push_str(&format_remaining_time(duration_ms));
+    output.push_str(&format_duration_ms(duration_ms));
 
     // Cost
     if config.format.show_cost {
@@ -222,23 +222,22 @@ fn shorten_model(model: &str) -> &str {
     }
 }
 
-const SESSION_LIMIT_MS: u64 = 5 * 60 * 60 * 1000; // 5 hours
-
-fn format_remaining_time(duration_ms: u64) -> String {
-    let remaining_ms = SESSION_LIMIT_MS.saturating_sub(duration_ms);
-
-    if remaining_ms == 0 {
-        return format!("{DIM}resetting{RESET}");
+fn format_duration_ms(ms: u64) -> String {
+    if ms == 0 {
+        return format!("{DIM}0m{RESET}");
     }
 
-    let total_secs = remaining_ms / 1000;
-    let hours = total_secs / 3600;
+    let total_secs = ms / 1000;
+    let days = total_secs / 86400;
+    let hours = (total_secs % 86400) / 3600;
     let mins = (total_secs % 3600) / 60;
 
-    if hours > 0 {
-        format!("{BOLD}{}h {:02}m{RESET} {DIM}left{RESET}", hours, mins)
+    if days > 0 {
+        format!("{BOLD}{}d {}h{RESET}", days, hours)
+    } else if hours > 0 {
+        format!("{BOLD}{}h {:02}m{RESET}", hours, mins)
     } else {
-        format!("{BOLD}{}m{RESET} {DIM}left{RESET}", mins)
+        format!("{BOLD}{}m{RESET}", mins)
     }
 }
 
@@ -301,7 +300,7 @@ pub fn print_legend(config: &Config) {
         RESET
     );
     println!();
-    println!("Time:  remaining session time (5h limit, shows \"resetting\" when exceeded)");
+    println!("Time:  elapsed session time (format: Xd Xh or Xh XXm)");
     println!("Cost:  $session / $today (api plan) or \"max\" with savings (max plan)");
     println!();
     println!("Git status:");

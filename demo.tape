@@ -44,19 +44,19 @@ Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input
 Enter
 Sleep 2s
 
-Type "# Time shows remaining session time (5h limit). When low:"
+Type "# Long sessions show days (e.g., 3d 21h):"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":180000,"total_output_tokens":40000,"context_window_size":200000},"cost":{"total_cost_usd":12.50,"total_duration_ms":17700000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":180000,"total_output_tokens":40000,"context_window_size":200000},"cost":{"total_cost_usd":12.50,"total_duration_ms":337680000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
 
-Type "# When session exceeds 5h, it shows 'resetting':"
+Type "# Context > 100% shows '100%+' (after compaction):"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":400000,"total_output_tokens":100000,"context_window_size":200000},"cost":{"total_cost_usd":45.00,"total_duration_ms":18500000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Sonnet"},"context_window":{"total_input_tokens":400000,"total_output_tokens":100000,"context_window_size":200000},"cost":{"total_cost_usd":45.00,"total_duration_ms":172800000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
 
