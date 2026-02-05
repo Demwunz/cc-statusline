@@ -1,97 +1,34 @@
-use std::path::Path;
-
-/// Detected project language/framework
-#[derive(Debug, Clone, PartialEq)]
-pub enum Language {
-    Rust,
-    Go,
-    TypeScript,
-    JavaScript,
-    Ruby,
-    Elixir,
-    Python,
-    Unknown,
-}
-
-impl Language {
-    /// Get display name for the language
-    pub fn name(&self) -> &'static str {
-        match self {
-            Language::Rust => "rust",
-            Language::Go => "go",
-            Language::TypeScript => "ts",
-            Language::JavaScript => "js",
-            Language::Ruby => "rb",
-            Language::Elixir => "ex",
-            Language::Python => "py",
-            Language::Unknown => "",
-        }
-    }
-
-    /// Get color name for the language
-    pub fn color(&self) -> &'static str {
-        match self {
-            Language::Rust => "red",
-            Language::Go => "cyan",
-            Language::TypeScript => "blue",
-            Language::JavaScript => "yellow",
-            Language::Ruby => "red",
-            Language::Elixir => "magenta",
-            Language::Python => "yellow",
-            Language::Unknown => "gray",
-        }
-    }
-}
-
-/// Detect the primary language/framework of a project
-pub fn detect_language(cwd: Option<&str>) -> Language {
-    let dir = match cwd {
-        Some(d) => d,
-        None => return Language::Unknown,
-    };
-
-    let path = Path::new(dir);
-    if !path.exists() {
-        return Language::Unknown;
-    }
-
-    // Check for language-specific files (order matters - more specific first)
-    if path.join("Cargo.toml").exists() {
-        Language::Rust
-    } else if path.join("go.mod").exists() {
-        Language::Go
-    } else if path.join("mix.exs").exists() {
-        Language::Elixir
-    } else if path.join("Gemfile").exists() {
-        Language::Ruby
-    } else if path.join("tsconfig.json").exists() {
-        Language::TypeScript
-    } else if path.join("package.json").exists() {
-        // Could be TS or JS - check for tsconfig
-        if path.join("tsconfig.json").exists() {
-            Language::TypeScript
-        } else {
-            Language::JavaScript
-        }
-    } else if path.join("pyproject.toml").exists()
-        || path.join("setup.py").exists()
-        || path.join("requirements.txt").exists()
-    {
-        Language::Python
-    } else {
-        Language::Unknown
-    }
-}
-
-/// Shorten a path for display (replace home with ~, truncate if needed)
+/// Shorten a path for display using fish-style abbreviation.
+/// Intermediate directories are shortened to their first character,
+/// the final component is kept in full. Home directory becomes ~.
+/// e.g. /Users/fazal/dev/cc-statusline → ~/d/cc-statusline
 pub fn shorten_path(path: &str) -> String {
+    let mut p = path.to_string();
+
     // Replace home directory with ~
     if let Some(home) = dirs::home_dir() {
         if let Some(home_str) = home.to_str() {
-            if path.starts_with(home_str) {
-                return format!("~{}", &path[home_str.len()..]);
+            if p.starts_with(home_str) {
+                p = format!("~{}", &p[home_str.len()..]);
             }
         }
     }
-    path.to_string()
+
+    // Split into components and shorten intermediates
+    let parts: Vec<&str> = p.split('/').collect();
+    if parts.len() <= 2 {
+        return p;
+    }
+
+    let mut result = Vec::with_capacity(parts.len());
+    let last = parts.len() - 1;
+    for (i, part) in parts.iter().enumerate() {
+        if i == last || *part == "~" || part.is_empty() {
+            result.push(part.to_string());
+        } else {
+            // First character (handle multi-byte correctly)
+            result.push(part.chars().next().unwrap().to_string());
+        }
+    }
+    result.join("/")
 }

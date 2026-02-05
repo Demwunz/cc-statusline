@@ -2,7 +2,7 @@ use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, YELLOW, CYAN};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
 use crate::git::GitStatus;
-use crate::workspace::{Language, shorten_path};
+use crate::workspace::shorten_path;
 
 const FILLED_CHAR: char = '█';
 const EMPTY_CHAR: char = '░';
@@ -15,7 +15,6 @@ pub fn render(
     session_cost: f64,
     daily_cost: f64,
     git: &GitStatus,
-    lang: &Language,
     cwd: Option<&str>,
     subagent_count: u32,
     config: &Config,
@@ -89,13 +88,6 @@ pub fn render(
     if config.format.show_git && git.is_repo() {
         output.push_str(&format!(" {DIM}│{RESET} "));
         output.push_str(&render_git(git));
-    }
-
-    // Language
-    if config.format.show_lang && *lang != Language::Unknown {
-        output.push_str(&format!(" {DIM}│{RESET} "));
-        let color = colors::color_code(lang.color());
-        output.push_str(&format!("{}{}{}", color, lang.name(), RESET));
     }
 
     // Current working directory
@@ -345,8 +337,7 @@ pub fn print_legend(config: &Config) {
     println!("  {RED}●n{RESET}      = unstaged changes");
     println!("  {DIM}?n{RESET}      = untracked files");
     println!();
-    println!("Language: detected from project files (Cargo.toml, package.json, etc.)");
-    println!("Path:     current working directory (~ = home)");
+    println!("Path:     current working directory, fish-style (~/d/project)");
     println!();
     println!("Subagents:");
     println!("  {CYAN}⚡n{RESET}     = active subagents (shown only when > 0)");

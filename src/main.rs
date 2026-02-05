@@ -203,9 +203,6 @@ fn run_statusline(config: &Config) {
         // Get git status
         let git_status = git::get_status(cwd.as_deref());
 
-        // Detect language
-        let lang = workspace::detect_language(cwd.as_deref());
-
         // Render and output
         let output = render::render(
             model_name,
@@ -214,7 +211,6 @@ fn run_statusline(config: &Config) {
             session_cost,
             history.daily_cost,
             &git_status,
-            &lang,
             cwd.as_deref(),
             subagent_count,
             config,
