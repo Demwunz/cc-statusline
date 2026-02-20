@@ -1,4 +1,4 @@
-use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, YELLOW, CYAN};
+use crate::colors::{self, BOLD, DIM, RESET, GREEN, RED, YELLOW};
 use crate::config::Config;
 use crate::context::ContextBreakdown;
 use crate::git::GitStatus;
@@ -17,7 +17,6 @@ pub fn render(
     daily_cost: f64,
     git: &GitStatus,
     cwd: Option<&str>,
-    subagent_count: u32,
     config: &Config,
 ) -> String {
     let mut output = String::new();
@@ -51,11 +50,6 @@ pub fn render(
     // Remaining tokens
     if breakdown.remaining_tokens > 0 {
         output.push_str(&format!(" {DIM}{} left{RESET}", format_tokens(breakdown.remaining_tokens)));
-    }
-
-    // Subagent count (only show when > 0)
-    if subagent_count > 0 {
-        output.push_str(&format!(" {CYAN}⚡{}{RESET}", subagent_count));
     }
 
     // Session time (elapsed)
@@ -357,7 +351,4 @@ pub fn print_legend(config: &Config) {
     println!("  {DIM}?n{RESET}      = untracked files");
     println!();
     println!("Path:     current working directory, fish-style (~/d/project)");
-    println!();
-    println!("Subagents:");
-    println!("  {CYAN}⚡n{RESET}     = active subagents (shown only when > 0)");
 }

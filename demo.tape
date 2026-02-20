@@ -36,7 +36,7 @@ Type "# 45% — degrading zone (yellow), recall precision drops"
 Enter
 Sleep 500ms
 
-Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":60000,"total_output_tokens":20000,"context_window_size":200000,"used_percentage":45,"remaining_percentage":55},"cost":{"total_cost_usd":1.20,"total_duration_ms":900000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"},"subagents":{"active":3}}' | cc-statusline`
+Type@50ms `echo '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":60000,"total_output_tokens":20000,"context_window_size":200000,"used_percentage":45,"remaining_percentage":55},"cost":{"total_cost_usd":1.20,"total_duration_ms":900000},"workspace":{"current_dir":"/Users/demo/dev/cc-statusline"}}' | cc-statusline`
 Enter
 Sleep 2s
 

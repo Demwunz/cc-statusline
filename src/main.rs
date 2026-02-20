@@ -83,14 +83,6 @@ struct StdinInput {
     workspace: Option<WorkspaceInfo>,
     #[serde(default)]
     session_id: Option<String>,
-    #[serde(default)]
-    subagents: Option<SubagentInfo>,
-}
-
-#[derive(Debug, Deserialize)]
-struct SubagentInfo {
-    #[serde(default)]
-    active: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -179,9 +171,6 @@ fn run_statusline(config: &Config) {
 
         let cwd = input.workspace.as_ref().and_then(|w| w.current_dir.clone());
 
-        // Get subagent count
-        let subagent_count = input.subagents.as_ref().map(|s| s.active).unwrap_or(0);
-
         // Get cached scanner results
         let (skills_tokens, plugins_tokens, mcp_tokens) = cache.get();
 
@@ -212,7 +201,6 @@ fn run_statusline(config: &Config) {
             history.daily_cost,
             &git_status,
             cwd.as_deref(),
-            subagent_count,
             config,
         );
 

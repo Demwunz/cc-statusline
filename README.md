@@ -16,7 +16,6 @@ A lightweight statusline for [Claude Code](https://docs.anthropic.com/en/docs/cl
 
 - 📊 **Context breakdown** - Visual bar showing token usage by segment
 - 🚦 **Degradation thresholds** - Color-coded warnings as context fills up
-- ⚡ **Subagent tracking** - See how many background agents are running
 - 💰 **Cost tracking** - Session and daily spending at a glance
 - 🔀 **Git integration** - Branch, staged/unstaged changes, ahead/behind
 - 📁 **Working directory** - Fish-style abbreviated paths
@@ -34,8 +33,8 @@ Built in Rust with zero runtime dependencies. A statusline runs on every prompt,
 ## What It Shows
 
 ```
-[opus] ▓▓▓████████████░░░░░░░░ 42% 116k left ⚡3 │ 1h 30m │ $0.45 / $12.30 │ main ✚2 │ ~/d/myproject
-       ▲ context bar             ▲ remaining   ▲ subagents ▲ elapsed ▲ cost           ▲ git     ▲ path
+[opus] ▓▓▓████████████░░░░░░░░ 42% 116k left │ 1h 30m │ $0.45 / $12.30 │ main ✚2 │ ~/d/myproject
+       ▲ context bar             ▲ remaining   ▲ elapsed ▲ cost           ▲ git     ▲ path
 ```
 
 **Context bar** — two textures show overhead vs conversation at a glance:
@@ -58,7 +57,6 @@ Built in Rust with zero runtime dependencies. A statusline runs on every prompt,
 Remaining tokens shown after percentage (e.g. `178k left`, `1.2m left`).
 
 **Other indicators:**
-- `⚡n` — active subagents (hidden when 0)
 - 🟢 green branch = clean, 🔴 red = dirty, `↑↓` ahead/behind, `✚●?` staged/unstaged/untracked
 - Paths are fish-style abbreviated (`~/d/cc-statusline`)
 
